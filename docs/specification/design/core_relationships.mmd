@@ -1,0 +1,9 @@
+erDiagram
+    USERS ||--o| SHOPS : owns
+    USERS ||--o{ ORDERS : places
+    SHOPS ||--o{ PRODUCTS : offers
+    SHOPS ||--o{ ORDERS : fulfils
+    ORDERS ||--|{ ORDER_ITEMS : contains
+    PRODUCTS ||--o{ ORDER_ITEMS : referenced_by
+    ORDERS ||--|{ ORDER_EVENTS : records
+    PRODUCTS ||--o{ INVENTORY_MOVEMENTS : tracks

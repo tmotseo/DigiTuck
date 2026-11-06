@@ -1,0 +1,17 @@
+stateDiagram-v2
+    direction TB
+    [*] --> PENDING: validated checkout
+    PENDING --> ACCEPTED: vendor accepts before expiry
+    PENDING --> REJECTED: vendor rejects
+    PENDING --> CANCELLED: customer or vendor cancels
+    PENDING --> EXPIRED: pending deadline
+    ACCEPTED --> PREPARING: vendor starts
+    ACCEPTED --> CANCELLED: vendor cancels
+    PREPARING --> READY: vendor marks ready
+    PREPARING --> CANCELLED: reason and stock disposition
+    READY --> COLLECTED: vendor confirms handover
+    READY --> CANCELLED: reason and stock disposition
+    COLLECTED --> [*]
+    REJECTED --> [*]
+    CANCELLED --> [*]
+    EXPIRED --> [*]

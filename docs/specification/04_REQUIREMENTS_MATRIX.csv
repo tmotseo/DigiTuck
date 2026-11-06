@@ -1,0 +1,16 @@
+Requirement ID,Feature,Source PDF pages,Module,Phase,Acceptance tests
+REQ01,Pickup-only checkout,3-4,Customer/API,4,AT04;AT05;AT06
+REQ02,Customer/vendor/admin permissions,2;20-22,Identity,2,AT02;AT13;AT14
+REQ03,Vendor registration and document review,15;17;19-22,Onboarding/Admin,2,AT03;AT16
+REQ04,"Approved-shop discovery, product search and price comparison",2;13;16-18,Catalogue,3,AT03;AT17
+REQ05,Single-shop cart and authoritative pricing,13-14,Customer/API,3-4,AT05;AT06;AT15
+REQ06,"Product CRUD, prices and available stock",4;10-11;16-19,Vendor/Inventory,3,AT04;AT11
+REQ07,Status workflow and history,4;14;16;18-19,Orders,4-5,AT08;AT09;AT11
+REQ08,Transactional stock and idempotency,14 (expanded),Orders/Database,4,AT04;AT05;AT07;AT09
+REQ09,Expiry and safe prepared-food cancellation,Proposed operating rules,Orders/Inventory,4,AT09;AT10
+REQ10,Responsive low-data interface,3-4;7;9;20,All UI,1;3;5,AT15;AT17
+REQ11,Order value and product reports,16;19,Vendor reports,5,AT18
+REQ12,"Private files, sessions and audit",20-22,Security,2;6,AT02;AT13;AT14;AT16
+REQ13,MySQL schema and historical snapshots,10-11;14 (corrected),Data,1;4,AT01;AT07;AT11
+REQ14,Render deployment and backup,9;20-21,Operations,6,AT01;AT19;AT20
+REQ15,"Suspension, moderation and safe account management",15;20-22,Admin/API,2;5,AT02;AT12;AT13
