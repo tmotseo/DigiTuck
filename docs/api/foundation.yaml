@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: DigiTuck foundation API
+  version: 0.1.0
+  description: Only health endpoints are implemented. Authentication and business endpoints are not available.
+paths:
+  /api/v1/health/live:
+    get:
+      summary: Process liveness, independent of MySQL
+      responses:
+        '200':
+          description: Process is online
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /api/v1/health/ready:
+    get:
+      summary: Database connectivity and applied foundation migration
+      responses:
+        '200':
+          description: MySQL is reachable and foundation migration is recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '503':
+          description: Database or migration unavailable; no private diagnostic information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Health:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [status, service]
+          properties:
+            status: { type: string, enum: [ok, ready] }
+            service: { type: string, const: digituck-api }
+        meta:
+          type: object
+          required: [requestId]
+          properties:
+            requestId: { type: string, format: uuid }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, fieldErrors, requestId]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            fieldErrors: { type: object, additionalProperties: { type: array, items: { type: string } } }
+            requestId: { type: string, format: uuid }

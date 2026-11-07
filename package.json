@@ -1,0 +1,51 @@
+{
+  "name": "digituck",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.14.0 <27"
+  },
+  "packageManager": "npm@11.18.0",
+  "scripts": {
+    "dev": "npm run build -w @digituck/contracts && concurrently -k -n contracts,api,web \"npm run dev -w @digituck/contracts\" \"npm run dev -w @digituck/api\" \"npm run dev -w @digituck/web\"",
+    "build": "npm run build -w @digituck/contracts && npm run build -w @digituck/api && npm run build -w @digituck/web",
+    "start": "node scripts/start.mjs",
+    "lint": "eslint .",
+    "typecheck": "npm run build -w @digituck/contracts && tsc -p tsconfig.check.json --noEmit",
+    "test": "npm run build -w @digituck/contracts && vitest run --config vitest.config.ts",
+    "test:db": "npm run build -w @digituck/contracts && vitest run --config vitest.db.config.ts",
+    "test:e2e": "playwright test",
+    "db:migrate": "tsx scripts/database.ts migrate",
+    "db:rollback": "tsx scripts/database.ts rollback",
+    "db:seed": "tsx scripts/database.ts seed",
+    "db:check": "tsx scripts/database.ts check",
+    "admin:bootstrap": "tsx scripts/admin-bootstrap.ts",
+    "db:up": "docker compose --env-file .env -f infra/compose.yaml up -d --wait",
+    "db:down": "docker compose --env-file .env -f infra/compose.yaml down"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.0",
+    "@types/express": "5.0.6",
+    "@types/express-mysql-session": "3.0.8",
+    "@types/express-session": "1.19.0",
+    "@types/multer": "2.3.0",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/supertest": "7.2.1",
+    "concurrently": "10.0.6",
+    "eslint": "10.14.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "supertest": "7.3.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0"
+  }
+}

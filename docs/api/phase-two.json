@@ -1,0 +1,1484 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DigiTuck Phase 2 API",
+    "version": "0.2.0",
+    "description": "Same-origin /api/v1. All mutations also require exact configured Origin. JSON success: {data,meta:{requestId}}; errors: {error:{code,message,fieldErrors,requestId}}. Download responses are private attachments. Health routes are documented separately in foundation.yaml."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/auth/csrf": {
+      "get": {
+        "summary": "Issue session CSRF token",
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Current account",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register customer or vendor",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registration"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Email/password login",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Revoke current session",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session revoked; empty body"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ]
+      }
+    },
+    "/account": {
+      "patch": {
+        "summary": "Edit own name and phone",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Account"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/password": {
+      "post": {
+        "summary": "Change password and revoke all sessions",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session revoked; empty body"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChange"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shops": {
+      "get": {
+        "summary": "Approved shops with active owners",
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 20,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    },
+    "/vendor/shop": {
+      "get": {
+        "summary": "Own shop application and checklist",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": []
+      },
+      "put": {
+        "summary": "Create or edit own shop",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vendor/shop/revise": {
+      "post": {
+        "summary": "Create new immutable-submission revision",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vendor/shop/submit": {
+      "post": {
+        "summary": "Freeze and submit current draft",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vendor/documents": {
+      "post": {
+        "summary": "Upload private draft document",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Upload"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vendor/documents/{id}": {
+      "delete": {
+        "summary": "Remove own draft document",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vendor/documents/{id}/download": {
+      "get": {
+        "summary": "Download own private document",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/vendors": {
+      "get": {
+        "summary": "List vendor applications",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 20,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    },
+    "/admin/vendors/{id}": {
+      "get": {
+        "summary": "Inspect current or historical exact submission",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "submissionVersion",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/admin/vendors/{id}/decision": {
+      "post": {
+        "summary": "Approve, reject or suspend exact reviewed version",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/documents/{id}/download": {
+      "get": {
+        "summary": "Privately download document with audit",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "summary": "List accounts",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 20,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    },
+    "/admin/users/{id}/status": {
+      "patch": {
+        "summary": "Activate/deactivate account and revoke sessions",
+        "security": [
+          {
+            "session": [],
+            "csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "http://127.0.0.1:5173"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserStatus"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/audit": {
+      "get": {
+        "summary": "Read append-only audit",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful data envelope"
+          },
+          "401": {
+            "description": "Session missing, expired or revoked"
+          },
+          "403": {
+            "description": "Wrong role or invalid CSRF/Origin"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "Stale version, state or duplicate conflict"
+          },
+          "422": {
+            "description": "Validation or file rejection"
+          },
+          "429": {
+            "description": "Persistent authentication throttling"
+          },
+          "500": {
+            "description": "Redacted unexpected failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 20,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "digituck.sid",
+        "description": "Production cookie: __Host-digituck.sid"
+      },
+      "csrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      }
+    },
+    "schemas": {
+      "Registration": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+27821234567"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 12,
+            "description": "Maximum 72 UTF-8 bytes"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "CUSTOMER",
+              "VENDOR"
+            ]
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "phone",
+          "password",
+          "role"
+        ]
+      },
+      "Login": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 12
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "Account": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "phone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fullName",
+          "phone"
+        ]
+      },
+      "PasswordChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 12,
+            "description": "Maximum 72 UTF-8 bytes"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "Profile": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 160
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "phone": {
+            "type": "string",
+            "example": "+27821234567"
+          },
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          },
+          "area": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "hours": {
+            "type": "array",
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "day": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                },
+                "open": {
+                  "type": "string",
+                  "example": "08:00"
+                },
+                "close": {
+                  "type": "string",
+                  "example": "17:00"
+                }
+              },
+              "required": [
+                "day",
+                "open",
+                "close"
+              ]
+            }
+          },
+          "isPaused": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "phone",
+          "address",
+          "area",
+          "hours",
+          "isPaused",
+          "expectedVersion"
+        ]
+      },
+      "Version": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "Upload": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "document": {
+            "type": "string",
+            "format": "binary",
+            "description": "PDF/JPEG/PNG, validated signature and MIME, max 10485760 bytes"
+          },
+          "type": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "document",
+          "type",
+          "expectedVersion"
+        ]
+      },
+      "Decision": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "submissionVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REJECT",
+              "SUSPEND"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "submissionVersion",
+          "action",
+          "reason"
+        ]
+      },
+      "UserStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "status",
+          "reason"
+        ]
+      }
+    }
+  }
+}
