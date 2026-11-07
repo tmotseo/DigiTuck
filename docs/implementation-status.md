@@ -31,11 +31,11 @@ Runtime: **Node 24.22.2**, npm **11.18.0**, native **MySQL Community 8.4.13**, l
 | `npm run lint` | Passed. |
 | `npm run typecheck` | Passed. |
 | `npm test` | **12 passed**, including production HTTPS/private-storage/secret configuration guards. |
-| `npm run test:db` | **17 passed**: six foundation and eleven Phase 2 real-MySQL tests, including approved-shop visibility after owner deactivation and material address changes. |
+| `npm run test:db` | **18 passed**: six foundation and twelve Phase 2 real-MySQL tests, including the held-request/logout race regression. |
 | `npm run db:check` | MySQL **8.4.13**, UTC **+00:00**, migrations 001 and 002 applied, no pending migrations. |
 | Frontend secret/build hygiene | Configured database/password/session values absent from built JS; `.env`, dependencies, builds and test artifacts ignored by Git. |
 | `npm run build` | Passed after clean installation: contracts/API TypeScript and Vite production frontend (76 modules). |
-| `npm run test:e2e` | **4 passed**, Chromium at 1280×900 and 360×800, repeated after clean install and visual fix. Full vendor registration → profile → upload → submit → admin login/review/approve → public listing; protected-route/API checks, no page errors or horizontal overflow. |
+| `npm run test:e2e` | **8 passed**, Chromium at 1280×900 and 360×800. Includes customer/vendor registration navigation through login in both directions and browser history, plus the full vendor submission/admin approval journey and protected-route checks. |
 | Production-cookie integration | Verified `Secure`, `HttpOnly`, `SameSite=Lax`, `__Host-`, Path=/, no Domain with a trusted HTTPS proxy request. This is not a live TLS deployment test. |
 | Private storage integration | Local real-file upload/download and unauthorized denial passed. Invalid signature, MIME mismatch, oversize uploads and submitted-document replacement/deletion rejected. |
 | Visual inspection | Inspected desktop admin and mobile vendor screenshots. Fixed an off-screen skip-link appearing in full-page captures; browser suite rerun passed. Screenshots/traces are ignored test artifacts. |
@@ -43,6 +43,13 @@ Runtime: **Node 24.22.2**, npm **11.18.0**, native **MySQL Community 8.4.13**, l
 Database coverage includes the six foundation tests plus Phase 2 registration/uniqueness/hash checks, role/ownership denial, CSRF/Origin, durable sessions across independent app/store instances, rotation/logout/password/status revocation, idle/absolute expiry, persistent throttling, private document validation/download, snapshot freeze, exact-version review, competing approvals, suspension/rejection/revision history and last-admin protection.
 
 Failures fixed during implementation: invalid Zod chaining, test TypeScript strictness, API prefix mismatch during wiring, and a production-cookie test inadvertently sharing a session-store instance with a different middleware configuration. Each app in that test now owns its own store, as real server instances do.
+
+## PR #1 review corrections — 2026-11-07
+
+- Reproduced logout resurrection against real MySQL: a separately authenticated request was held open, logout deleted its session, then completing the request restored access (old cookie incorrectly returned 200). The updated store uses INSERT for new sessions and UPDATE-only for loaded/persisted sessions. The same regression now verifies 401 after completion and confirms the deleted session row stays absent; a separate session remains signed in.
+- Keyed the authentication form by login/customer/vendor mode. Route transitions reset role and form state; direct links allow switching registration modes. Browser tests cover both directions, manual role changes, login transitions and history navigation on desktop and mobile.
+- After these changes, **lint, typecheck, 12 unit/API tests, 18 real-MySQL tests, production build and 8 browser tests all passed**. No schema migration or dependency change was needed. Local MySQL and browser test isolation remain unchanged.
+- The fixes update the existing `codex/phase-2-login-vendor-approval` branch for PR #1. Requested frontend/backend branches start from the corrected checkpoint: `codex/frontend` and `codex/backend`. They retain the full repository and shared contracts; work is separated by branch and application directory.
 
 ## Limits and operator decisions
 

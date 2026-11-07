@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, describe, it, expect } from 'vitest'
 import request from 'supertest'
+import express from 'express'
 import { fileURLToPath } from 'node:url'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -7,7 +8,7 @@ import { join } from 'node:path'
 import '../../apps/api/src/config.js'
 import { createDatabase } from '../../apps/api/src/db/client.js'
 import { createApp } from '../../apps/api/src/app.js'
-import { makeSessionStore } from '../../apps/api/src/middleware/security.js'
+import { makeSessionStore, security, requireRole } from '../../apps/api/src/middleware/security.js'
 import { localStorage } from '../../apps/api/src/lib/storage.js'
 import { bootstrapAdmin } from '../../apps/api/src/modules/admin/bootstrap.js'
 
@@ -74,6 +75,38 @@ describe('Phase 2 with real MySQL', () => {
     for (let i = 0; i < 5; i++) expect((await mutate(request.agent(app), '/auth/login', { email: 'missing@example.invalid', password })).status).toBe(401)
     expect((await mutate(request.agent(app), '/auth/login', { email: 'missing@example.invalid', password })).status).toBe(429)
     expect(Number((await db('auth_rate_limits').whereNotNull('blocked_until').count('* as count').first())?.count)).toBeGreaterThan(0)
+  })
+  it('cannot restore a logged-out session when an authenticated request finishes late', async () => {
+    const agent = request.agent(app)
+    const login = await mutate(agent, '/auth/login', { email: 'vendor@example.invalid', password })
+    expect(login.status).toBe(200)
+    const cookie = login.headers['set-cookie']![0]!.split(';')[0]!
+    const sessionId = decodeURIComponent(cookie.slice(cookie.indexOf('=') + 1)).slice(2).split('.')[0]!
+    // A separate server/store represents another process with a request already authenticated.
+    const heldStore = makeSessionStore(url!); stores.push(heldStore)
+    const guards = security(db, heldStore, options.security), heldApp = express()
+    let reached!: () => void, release!: () => void
+    const entered = new Promise<void>(resolve => { reached = resolve })
+    const gate = new Promise<void>(resolve => { release = resolve })
+    heldApp.use(guards.middleware, guards.authenticate, requireRole())
+    heldApp.get('/held', async (req, res) => {
+      // Force a save even if the test clock gives both requests the same lastSeen value.
+      req.session.csrfToken = 'a'.repeat(64)
+      reached()
+      await gate
+      res.json({ finished: true })
+    })
+    const held = request(heldApp).get('/held').set('Cookie', cookie).then(response => response)
+    try {
+      await Promise.race([entered, held.then(() => { throw new Error('Request ended before reaching the authenticated hold point') })])
+      expect((await mutate(agent, '/auth/logout', {})).status).toBe(204)
+      expect(await db('sessions').where({ session_id: sessionId }).first()).toBeUndefined()
+    } finally { release() }
+    expect((await held).status).toBe(200)
+    await request(app).get(path('/auth/me')).set('Cookie', cookie).expect(401)
+    expect(await db('sessions').where({ session_id: sessionId }).first()).toBeUndefined()
+    // Logout is per session, not an account-wide auth-version bump.
+    await vendor.get(path('/auth/me')).expect(200)
   })
   it('enforces idle and absolute expiry from durable session data and secure production cookies', async () => {
     for (const field of ['lastSeen', 'startedAt']) {

@@ -14,6 +14,10 @@ export function Guard({ role }: { role?: SafeUser['role'] }) {
   return <Outlet />
 }
 export function AuthPage({ register = false, vendor = false }: { register?: boolean; vendor?: boolean }) {
+  // Router transitions can reuse AuthPage. A mode key gives each form fresh state.
+  return <AuthForm key={register ? vendor ? 'vendor' : 'customer' : 'login'} register={register} vendor={vendor} />
+}
+function AuthForm({ register, vendor }: { register: boolean; vendor: boolean }) {
   const [role, setRole] = useState(vendor ? 'VENDOR' : 'CUSTOMER'), action = useAction(), navigate = useNavigate(), cache = useQueryClient()
   return <><Heading title={register ? 'Join your neighbourhood' : 'Welcome back'}>{register ? 'Shop locally or apply to open your own tuckshop.' : 'Sign in to your DigiTuck account.'}</Heading>
     <form className="form-card narrow" onSubmit={event => { event.preventDefault(); const data = new FormData(event.currentTarget); void action.run(async () => {
@@ -28,6 +32,7 @@ export function AuthPage({ register = false, vendor = false }: { register?: bool
       {register && <p className="help-text">Use at least 12 characters, up to 72 UTF-8 bytes. Vendor applications are reviewed before a shop is listed.</p>}
       <button className="button" type="submit">{action.pending ? 'Please wait…' : register ? 'Create account' : 'Sign in'}</button></fieldset>
       <p>{register ? 'Already registered?' : 'New to DigiTuck?'} <Link to={register ? '/login' : '/register'}>{register ? 'Sign in' : 'Create an account'}</Link></p>
+      <p><Link to={vendor ? '/register' : '/vendor/register'}>{vendor ? 'Register as a customer' : 'Register as a vendor'}</Link></p>
     </form></>
 }
 export function AccountPage() {

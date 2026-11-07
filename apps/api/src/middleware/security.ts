@@ -8,13 +8,37 @@ import { HttpError } from '../lib/errors.js'
 import { findUser, safeUser } from '../modules/auth/repository.js'
 
 declare module 'express-session' {
-  interface SessionData { userId?: string; authVersion?: number; startedAt?: number; lastSeen?: number; csrfToken?: string }
+  interface SessionData { userId?: string; authVersion?: number; startedAt?: number; lastSeen?: number; csrfToken?: string; persisted?: boolean }
 }
 export interface SecurityConfig { secret: string; origins: string[]; production: boolean; idleMs?: number; absoluteMs?: number }
 export function makeSessionStore(databaseUrl: string) {
   const url = new URL(databaseUrl)
   const Store = MySQLSession(session)
-  return new Store({ host: url.hostname, port: Number(url.port || 3306), user: decodeURIComponent(url.username), password: decodeURIComponent(url.password), database: url.pathname.slice(1), createDatabaseTable: false, clearExpired: true, checkExpirationInterval: 60000, ...(url.searchParams.get('ssl') === 'true' ? { ssl: { rejectUnauthorized: true } } : {}) })
+  const store = new Store({ host: url.hostname, port: Number(url.port || 3306), user: decodeURIComponent(url.username), password: decodeURIComponent(url.password), database: url.pathname.slice(1), createDatabaseTable: false, clearExpired: true, checkExpirationInterval: 60000, ...(url.searchParams.get('ssl') === 'true' ? { ssl: { rejectUnauthorized: true } } : {}) })
+  const get = store.get.bind(store)
+  store.get = (id: string, callback?: (error: unknown, data?: session.SessionData | null) => void) => {
+    const result = get(id).then((data: session.SessionData | null) => {
+      // Also marks sessions written before this fix. The marker stays server-side.
+      if (data) data.persisted = true
+      return data
+    })
+    if (callback) void result.then(data => callback(null, data), error => callback(error))
+    return result
+  }
+  store.set = (id: string, data: session.SessionData, callback?: (error?: unknown) => void) => {
+    const existing = data.persisted === true
+    data.persisted = true
+    const expires = Math.round(new Date(data.cookie.expires || Date.now() + (store.options.expiration || 86400000)).getTime() / 1000)
+    // Never upsert a loaded session: DELETE (logout) and UPDATE serialize in InnoDB.
+    // An UPDATE arriving after DELETE affects zero rows, rather than resurrecting it.
+    const result = store.query(existing
+      ? 'UPDATE sessions SET expires = ?, data = ? WHERE session_id = ?'
+      : 'INSERT INTO sessions (expires, data, session_id) VALUES (?, ?, ?)',
+    [expires, JSON.stringify(data), id]).then(() => undefined)
+    if (callback) void result.then(() => callback(), error => callback(error))
+    return result
+  }
+  return store
 }
 export const saveSession = (req: Request) => new Promise<void>((resolve, reject) => req.session.save(error => error ? reject(error) : resolve()))
 export const destroySession = (req: Request) => new Promise<void>((resolve, reject) => req.session.destroy(error => error ? reject(error) : resolve()))

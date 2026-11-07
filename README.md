@@ -117,6 +117,27 @@ MySQL DDL auto-commits. A failed migration may leave partial tables; do not blin
 
 ## Repository map
 
+### Frontend and backend branches
+
+`codex/frontend` is for frontend work in `apps/web`; `codex/backend` is for API/database work in `apps/api`, `db` and backend scripts. Both start from the corrected Phase 2 checkpoint and retain the full repository, including `packages/contracts`. Coordinate contract changes between branches before integration; these are separate development branches, not separate repositories or deployments.
+
+After the initial install/configuration, run the applications in separate terminals when needed:
+
+```powershell
+# Frontend terminal
+npm run build -w @digituck/contracts
+npm run dev -w @digituck/web
+```
+
+```powershell
+# Backend terminal (with MySQL running)
+npm run build -w @digituck/contracts
+npm run db:migrate
+npm run dev -w @digituck/api
+```
+
+The frontend still needs the API for accounts and shop data; its development proxy targets port 4000. Rebuild shared contracts after changing them, or use the root `npm run dev` command to watch all three workspaces together.
+
 `apps/web`: React pages/layouts/forms; `apps/api`: Express authentication, vendor/admin services and storage; `packages/contracts`: strict schemas; `db`: versioned schema/triggers/seeds; `scripts`: migration/bootstrap/test server; `tests`: unit, MySQL and browser suites; `docs/specification`: preserved requirements.
 
 See [Phase 2 decisions](docs/decisions/003-phase-two.md), [API routes and request schemas](docs/api/phase-two.json), [requirements](docs/requirements-checklist.md), [blueprint](docs/specification/01_SYSTEM_BLUEPRINT.md) and [phase prompts](docs/specification/03_PHASE_PROMPTS.md). Recovery email, hosting, backup restoration and retention remain prelaunch decisions. No online payment, delivery or driver workflow is included.
