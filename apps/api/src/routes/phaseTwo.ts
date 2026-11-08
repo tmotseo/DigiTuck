@@ -11,6 +11,8 @@ import * as vendor from '../modules/vendor/service.js'
 import * as admin from '../modules/admin/service.js'
 import { HttpError } from '../lib/errors.js'
 import type { PrivateStorage } from '../lib/storage.js'
+import { createProductSchema, editProductSchema, stockAdjustmentSchema } from '@digituck/contracts'
+import * as catalogue from '../modules/catalogue/service.js'
 
 export interface PhaseTwoOptions { db: Knex; store: session.Store; security: SecurityConfig; storage: PrivateStorage; documentTypes: string[] }
 export function phaseTwo(options: PhaseTwoOptions) {
@@ -53,8 +55,15 @@ export function phaseTwo(options: PhaseTwoOptions) {
     res.clearCookie(guards.cookieName, { path: '/', httpOnly: true, secure: options.security.production, sameSite: 'lax' })
     res.status(204).end()
   })
-  router.get('/shops', async (req, res) => { const p = paginationSchema.parse(req.query); send(res, await admin.publicShops(db, p.page, p.limit)) })
+  router.get('/shops', async (req, res) => { const p = paginationSchema.parse(req.query); send(res, await catalogue.publicShops(db, p.page, p.limit)) })
+  router.get('/categories', async (_req, res) => { send(res, await catalogue.categories(db)) })
+  router.get('/shops/:slug', async (req, res) => { const p = paginationSchema.parse(req.query); send(res, await catalogue.publicCatalogue(db, z.string().min(1).max(200).parse(req.params.slug), p.page, p.limit)) })
   router.use('/vendor', requireRole('VENDOR'))
+  router.get('/vendor/products', async (req, res) => { const p = paginationSchema.parse(req.query); send(res, await catalogue.vendorList(db, user(res).id, p.page, p.limit)) })
+  router.post('/vendor/products', async (req, res) => { send(res, await catalogue.create(db, user(res).id, createProductSchema.parse(req.body)), 201) })
+  router.patch('/vendor/products/:id', async (req, res) => { const input = editProductSchema.parse(req.body); send(res, await catalogue.change(db, user(res).id, id(req.params.id), input.expectedVersion, { product: input })) })
+  router.post('/vendor/products/:id/stock', async (req, res) => { const input = stockAdjustmentSchema.parse(req.body); send(res, await catalogue.change(db, user(res).id, id(req.params.id), input.expectedVersion, input)) })
+  router.delete('/vendor/products/:id', async (req, res) => { send(res, await catalogue.change(db, user(res).id, id(req.params.id), versionSchema.parse(req.body).expectedVersion, { archive: true })) })
   router.get('/vendor/shop', async (_req, res) => { send(res, await vendor.viewShop(db, user(res).id, documentTypes)) })
   router.put('/vendor/shop', async (req, res) => { await vendor.saveProfile(db, user(res).id, profileSchema.parse(req.body)); send(res, await vendor.viewShop(db, user(res).id, documentTypes)) })
   router.post('/vendor/shop/revise', async (req, res) => { await vendor.revise(db, user(res).id, versionSchema.parse(req.body).expectedVersion); send(res, await vendor.viewShop(db, user(res).id, documentTypes)) })

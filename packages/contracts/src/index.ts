@@ -48,3 +48,21 @@ export const userStatusSchema = z.strictObject({ status: z.enum(['ACTIVE','INACT
 export const paginationSchema = z.strictObject({ page: z.coerce.number().int().min(1).default(1), limit: z.coerce.number().int().min(1).max(100).default(20) })
 export type SafeUser = { id: string; fullName: string; email: string; phone: string; role: typeof roles[number] }
 export type ShopProfile = z.infer<typeof profileSchema>
+
+const stockQuantity = z.number().int().min(0).max(1_000_000)
+export const productSchema = z.strictObject({
+  name: z.string().trim().min(2).max(160), description: z.string().trim().max(2000),
+  categoryId: z.uuid(), price: moneySchema.refine(value => toCents(value) > 0, 'Price must be positive'),
+  lowStockThreshold: stockQuantity, isVisible: z.boolean()
+})
+export const createProductSchema = productSchema.extend({ initialQuantity: stockQuantity })
+export const editProductSchema = productSchema.extend(versionSchema.shape)
+export const stockAdjustmentSchema = versionSchema.extend({
+  quantityDelta: z.number().int().min(-1_000_000).max(1_000_000).refine(value => value !== 0, 'Enter a non-zero adjustment'),
+  reason: z.string().trim().min(3).max(1000)
+})
+export type ProductInput = z.infer<typeof productSchema>
+export type Product = { id: string; name: string; description: string; categoryId: string; categoryName: string; price: string; availableQuantity: number; lowStockThreshold: number; isVisible: boolean; moderationHidden: boolean; version: number }
+export type ProductList = { items: Product[]; total: number; availableUnits: number; page: number; limit: number }
+export type Category = { id: string; name: string }
+export type PublicShop = { id: string; slug: string; name: string; description: string; area: string; address: string; is_paused: boolean; productCount: number; availableUnits: number }

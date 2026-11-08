@@ -1,6 +1,6 @@
 # DigiTuck
 
-Collection-only local tuckshops. **Phases 0–2 are implemented:** React/Express/MySQL foundation, customer/vendor accounts, private vendor applications and administrator approval. Catalogue/cart (Phase 3) and ordering (Phase 4) are not implemented. No deployment or paid services.
+Collection-only local tuckshops. **Phases 0–2 are implemented:** React/Express/MySQL foundation, customer/vendor accounts, private vendor applications and administrator approval. Vendor products, inventory adjustments and public shop catalogues are implemented. Cart and ordering remain pending. No deployment or paid services.
 
 ## Requirements
 
@@ -141,3 +141,14 @@ The frontend still needs the API for accounts and shop data; its development pro
 `apps/web`: React pages/layouts/forms; `apps/api`: Express authentication, vendor/admin services and storage; `packages/contracts`: strict schemas; `db`: versioned schema/triggers/seeds; `scripts`: migration/bootstrap/test server; `tests`: unit, MySQL and browser suites; `docs/specification`: preserved requirements.
 
 See [Phase 2 decisions](docs/decisions/003-phase-two.md), [API routes and request schemas](docs/api/phase-two.json), [requirements](docs/requirements-checklist.md), [blueprint](docs/specification/01_SYSTEM_BLUEPRINT.md) and [phase prompts](docs/specification/03_PHASE_PROMPTS.md). Recovery email, hosting, backup restoration and retention remain prelaunch decisions. No online payment, delivery or driver workflow is included.
+
+## Products and inventory
+
+Run `npm run db:migrate` to add the standard Food, Drinks, Groceries and Other categories (migration 003), then `npm run dev` as above. No new environment values or dependencies are required.
+
+1. Sign in as a vendor and save Business details if the shop has not been created yet.
+2. Open **Products → Add product**. Enter name, category, ZAR price, starting quantity and low-stock threshold. Save, edit, hide or archive your products from this tab.
+3. Open **Inventory** to add or remove units using a signed adjustment (e.g. `10` for a delivery or `-2` for damaged stock) and a reason. Stock cannot become negative. After a conflict, reload the latest products, then re-enter the adjustment. For an open product edit, cancel and reopen after reloading.
+4. Customers open an approved vendor from **Discover → View products**. Cards and the catalogue show the number of distinct visible products and total available units; each product shows its own quantity or Out of stock. The catalogue refreshes every 15 seconds while visible and on window focus.
+
+Draft vendors can prepare products, but only approved shops with active owners appear publicly. Hidden, moderated, archived and inactive-category products are excluded from public counts. Zero-stock products remain listed. Product image uploads, cart and checkout are outside this change. API details: [catalogue endpoints](docs/api/catalogue.md).

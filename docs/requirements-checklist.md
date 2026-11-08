@@ -7,9 +7,9 @@ The original matrix in `specification/04_REQUIREMENTS_MATRIX.csv` is preserved. 
 | REQ01 collection only | Copy and schema have no delivery/payment entities | Phase 4 checkout; AT04–06 |
 | REQ02 roles/permissions | Customer/vendor signup, login/logout, MySQL sessions, CSRF, account/password edits, role/ownership checks, last-admin protection | Phase 2 complete; HTTP/browser coverage AT02/13/14 |
 | REQ03 vendor review | Private uploads, frozen snapshots, exact-version review, approval/rejection/suspension with audit | Phase 2 complete; stale/concurrent approvals and privacy tested AT03/16 |
-| REQ04 discovery/search | Real routes with explicit unimplemented states | Phase 3 catalogue; AT03/17 |
+| REQ04 discovery/search | Approved shop links, paginated public catalogue and visible product/unit counts | Search and category discovery filters remain; AT03/17 catalogue subset |
 | REQ05 one-shop/exact pricing | Composite item foreign keys, decimal contracts/cents helpers | Phase 3/4 cart and checkout; AT05/06/15 |
-| REQ06 catalogue/stock | Products/categories schema, nonnegative stock checks, vendor routes | Phase 3 CRUD/ledger service; AT04/11 |
+| REQ06 catalogue/stock | Own-product create/edit/hide/archive; transactional stock adjustment ledger, version checks, real MySQL stock race | Image uploads and cart remain; ordering AT04/11 in Phase 4 |
 | REQ07 status/history | State enum, immutable snapshots, append-only events | Phase 4/5 transitions/history; AT08/09/11 |
 | REQ08 transactional idempotency | Unique request and movement constraints | Phase 4 atomic service and races; AT04/05/07/09 |
 | REQ09 expiry/restock | Expiry index, item disposition fields/checks | Phase 4 job/cancellation policy; AT09/10 |

@@ -31,3 +31,9 @@ button:disabled,fieldset:disabled { opacity:.65; cursor:wait }
 .audit-data { white-space:pre-wrap; overflow-wrap:anywhere; font-size:.85rem }
 .danger { background:var(--error) }
 @media(max-width:600px) { .form-card { padding:18px }.form-grid,.account-grid { grid-template-columns:1fr }.hours-row label { width:100% }.button-row { flex-wrap:wrap }.document-list span { display:block; margin:4px 0 } }
+
+.catalogue-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+.catalogue-summary { font-size: 1.1rem; font-weight: 600; margin: 24px 0; }
+.product-price { display: block; font-size: 1.4rem; margin-top: 16px; }
+.workspace-card { overflow-wrap: anywhere; }
+.workspace-card fieldset { min-width: 0; }

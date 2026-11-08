@@ -1,3 +1,19 @@
+# Catalogue and inventory checkpoint — 2026-11-08
+
+Scope: vendor Products and Inventory tabs, plus customer vendor catalogues and inventory-based counts. Existing changes in `apps/web/src/pages/Vendor.tsx` were preserved. This supersedes the older statement below that all catalogue work is pending; cart/ordering/images/search remain pending.
+
+Implemented product create/edit/hide/archive, initial stock, category and positive decimal-string price validation, low-stock thresholds/filter, signed inventory adjustments with reasons and optimistic versions. API enforces vendor ownership, role, CSRF and Origin. MySQL transactions lock shop then product and write stock and append-only movements atomically. Archived products retain history.
+
+Approved shop cards now open `/shops/:slug`. Customers see visible product counts, total units, per-product quantities and out-of-stock labels. Hidden/moderated/archived products and inactive categories are excluded from public counts; private/suspended shops and inactive owners are inaccessible. Catalogue results have bounded pagination; counts cover the full catalogue. Public catalogue polls every 15 seconds while visible. No cart, checkout or product image upload was added.
+
+Migration 003 supplies non-demo categories, and has been applied to the local development database. `db:check` reports MySQL **8.4.13**, UTC **+00:00**, all three migrations applied and no pending migrations. No dependencies or runtime pins changed. README, requirement mapping, API documentation and decision 004 describe the workflow.
+
+Verification so far: lint and typecheck passed; production build passed; **12 unit/API tests and 22 real-MySQL tests passed**. The new database tests cover cross-vendor/customer denial, strict inputs, draft privacy, visibility/counts, stock races, stale retries, no negative stock, decimal price updates, archive retention and suspended/inactive shop denial. Initial database test launch was safely rejected until `ALLOW_DB_TEST_RESET=true` was supplied for the existing disposable `_test` database. Browser run initially failed on an exact-label dropdown locator; selector corrected and the rerun passed: **8 browser tests at 1280×900 and 360×800**, including vendor approval → product creation → price edit → stock adjustment → public shop counts → catalogue → reload persistence. No browser runtime errors or horizontal overflow were detected. Inspected desktop inventory and mobile catalogue screenshots. Final lint/typecheck and `git diff --check` also passed.
+
+No deployment, push, merge, paid resource or production infrastructure changes. Run with existing environment using `npm run dev`; fresh checkouts must run `npm run db:migrate` first. See `docs/decisions/004-catalogue-inventory.md` and `docs/api/catalogue.md`.
+
+---
+
 # Implementation status — Phase 2 checkpoint
 
 Updated **2026-11-07**, Africa/Johannesburg. Scope: foundation verification followed by accounts and vendor approval. **Stop after Phase 2; no deployment or paid resources.**
